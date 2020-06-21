@@ -1,15 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// 
 
 namespace Buffs2Csv
 {
+    using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+
     using CsvHelper;
+
     using OpenQA.Selenium;
     using OpenQA.Selenium.Chrome;
 
@@ -17,98 +20,101 @@ namespace Buffs2Csv
     {
         public string Name { get; }
 
-        public int WCB{ get; }
-        public int Ony{ get; }
-        public int ZG{ get; }
-        public int SF{ get; }
-        public int DMF{ get; }
-        public int UBRS{ get; }
-        public int DMT1{ get; }
-        public int DMT2{ get; }
-        public int DMT3{ get; }
-               
+        public int WCB { get; }
+
+        public int Ony { get; }
+
+        public int ZG { get; }
+
+        public int SF { get; }
+
+        public int DMF { get; }
+
+        public int UBRS { get; }
+
+        public int DMT1 { get; }
+
+        public int DMT2 { get; }
+
+        public int DMT3 { get; }
 
         public List<WorldBuff> WorldBuffs { get; }
 
         public Player(string name, List<WorldBuff> buffs)
         {
-            Name = name;
-            WorldBuffs = buffs;
+            this.Name = name;
+            this.WorldBuffs = buffs;
 
-            WCB = WorldBuffs.Any(b => b.Kind == WorldBuffType.WCB) ? 1 : 0;
-            Ony = WorldBuffs.Any(b => b.Kind == WorldBuffType.Ony) ? 1 : 0;
-            ZG = WorldBuffs.Any(b => b.Kind == WorldBuffType.SpiritOfZandalar) ? 1 : 0;
-            SF = WorldBuffs.Any(b => b.Kind == WorldBuffType.Songflower) ? 1 : 0;
-            DMF = WorldBuffs.Any(b => b.Kind == WorldBuffType.DMF) ? 1 : 0;
-            DMT1 = WorldBuffs.Any(b => b.Kind == WorldBuffType.FengusFerocity) ? 1 : 0;
-            DMT2 = WorldBuffs.Any(b => b.Kind == WorldBuffType.SlipkiksSavvy) ? 1 : 0;
-            DMT3 = WorldBuffs.Any(b => b.Kind == WorldBuffType.MoldarsMoxie) ? 1 : 0;
-            UBRS = WorldBuffs.Any(b => b.Kind == WorldBuffType.UBRSFireResist) ? 1 : 0;
+            this.WCB = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.WCB) ? 1 : 0;
+            this.Ony = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.Ony) ? 1 : 0;
+            this.ZG = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.SpiritOfZandalar) ? 1 : 0;
+            this.SF = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.Songflower) ? 1 : 0;
+            this.DMF = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.DMF) ? 1 : 0;
+            this.DMT1 = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.FengusFerocity) ? 1 : 0;
+            this.DMT2 = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.SlipkiksSavvy) ? 1 : 0;
+            this.DMT3 = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.MoldarsMoxie) ? 1 : 0;
+            this.UBRS = this.WorldBuffs.Any(b => b.Kind == WorldBuffType.UBRSFireResist) ? 1 : 0;
         }
 
         public void AddBuff(WorldBuff b)
         {
-            WorldBuffs.Add(b);
+            this.WorldBuffs.Add(b);
         }
 
-    
-      
-
         /// <inheritdoc />
-
     }
 
     public struct WorldBuff
-    { 
+    {
         public WorldBuffType Kind { get; }
 
         public WorldBuff(uint id)
         {
-            Kind = (WorldBuffType)id;
+            this.Kind = (WorldBuffType)id;
         }
     }
 
     public enum WorldBuffType
     {
         SpiritOfZandalar = 24425,
-        FengusFerocity = 22817,
-        MoldarsMoxie = 22818,
-        SlipkiksSavvy = 22820,
-        UBRSFireResist = 15123,
-        DMF = 23768,
-        Ony = 22888,
-        WCB = 16609,
-        Songflower = 15366,
 
+        FengusFerocity = 22817,
+
+        MoldarsMoxie = 22818,
+
+        SlipkiksSavvy = 22820,
+
+        UBRSFireResist = 15123,
+
+        DMF = 23768,
+
+        Ony = 22888,
+
+        WCB = 16609,
+
+        Songflower = 15366
     }
 
     static class Program
     {
+        private static string raidId;
 
+        private static ChromeDriver D { get; set; }
 
-        static string raidId;
+        private static List<Player> Raiders { get; set; }
 
-        static ChromeDriver D { get; set; }
+        private static Exception AppException { get; set; }
 
-        static List<Player> Raiders { get; set; }
+        private static bool Done { get; set; }
 
-        static Exception AppException { get; set; }
+        private static string LogName { get; set; }
 
-        static bool Done { get; set; }
-
-        static string LogName { get; set; }
-
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-
-            if (!System.IO.Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "logs"))
-            {
-                Directory.CreateDirectory("logs");
-            }
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "logs")) Directory.CreateDirectory("logs");
 
             while (true)
             {
-
                 raidId = string.Empty;
                 D = null;
                 Raiders = new List<Player>();
@@ -116,10 +122,8 @@ namespace Buffs2Csv
                 Done = false;
                 LogName = string.Empty;
 
-
                 do
                 {
-                    
                     Console.WriteLine("Copy/paste inn logg-ID fra URL (f.eks G3xpg6CWXdHrvaDJ). Trykk Enter");
                     Console.WriteLine("NB! Krever at du har Chrome 83.0 installert");
                     Console.WriteLine();
@@ -132,10 +136,7 @@ namespace Buffs2Csv
                         continue;
                     }
 
-                    if (raidId?.Length != 16)
-                    {
-                        Console.WriteLine("Logg-ID ble oppgitt i feil format, skal være 16 tegn");
-                    }
+                    if (raidId?.Length != 16) Console.WriteLine("Logg-ID ble oppgitt i feil format, skal være 16 tegn");
                 }
                 while (string.IsNullOrEmpty(raidId) || raidId.Length != 16);
 
@@ -153,7 +154,6 @@ namespace Buffs2Csv
 
                 s.SuppressInitialDiagnosticInformation = true;
 
-
                 try
                 {
                     D = new ChromeDriver(s, opt);
@@ -164,24 +164,19 @@ namespace Buffs2Csv
                     continue;
                 }
 
-                
                 Task.Factory.StartNew(Manager);
-
-
 
                 while (!Done)
                 {
-
                 }
 
                 D.Close();
 
-           
-
                 if (AppException == null)
                 {
                     Console.Clear();
-                    Console.WriteLine("Wbuffs lagret til: " + AppDomain.CurrentDomain.BaseDirectory + @"\logs\" + LogName + ".csv");
+                    Console.WriteLine(
+                        "Wbuffs lagret til: " + AppDomain.CurrentDomain.BaseDirectory + @"\logs\" + LogName + ".csv");
                 }
                 else
                 {
@@ -189,52 +184,40 @@ namespace Buffs2Csv
                 }
 
                 Console.WriteLine();
-
             }
         }
 
-        static uint GetSpellIdFromHref(string href)
+        private static uint GetSpellIdFromHref(string href)
         {
             var parts = href.Split('=');
 
             return uint.Parse(parts[1]);
         }
 
-
-        static string GetPlayerNameFromRowText(string text)
+        private static string GetPlayerNameFromRowText(string text)
         {
-            var parts = text.Split(new string[]{Environment.NewLine}, StringSplitOptions.None);
+            var parts = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             return parts[0];
         }
 
-
-
-
-        static async Task Manager()
+        private static async Task Manager()
         {
             D.Url = "https://classic.warcraftlogs.com/reports/" + raidId + "#boss=-2&difficulty=0&wipes=2";
 
             var source = D.PageSource;
 
-            
-
-
             LogName = D.FindElementByCssSelector("#report-title-container").Text.Split(
-                new string[] { Environment.NewLine },
+                new[] { Environment.NewLine },
                 StringSplitOptions.None)[0].Replace(" ", "_");
-
-                
 
             var tableRows = await GetRows().ConfigureAwait(false);
 
             IWebElement[] all = new IWebElement[tableRows.Count];
-            
+
             tableRows.CopyTo(all, 0);
 
             Task[] tasks = new Task[all.Length];
-
-            
 
             Raiders = new List<Player>();
 
@@ -242,8 +225,6 @@ namespace Buffs2Csv
 
             foreach (var e in all)
             {
-
-            
                 try
                 {
                     tasks[i] = Task.Factory.StartNew(() => BuildPlayer(e));
@@ -254,92 +235,64 @@ namespace Buffs2Csv
                 }
 
                 i++;
-
             }
 
             Task.WaitAll(tasks);
 
-
-
-       
             Raiders.OrderBy(r => r.Name);
-
 
             try
             {
-
-            using (var writer = new StreamWriter(@"logs\" + LogName + ".csv",false,  Encoding.UTF8))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            {
-                csv.WriteRecords(Raiders);
-            }
-
+                using (var writer = new StreamWriter(@"logs\" + LogName + ".csv", false, Encoding.UTF8))
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    csv.WriteRecords(Raiders);
+                }
             }
             catch (Exception e)
             {
                 AppException = e;
             }
 
-
             Done = true;
-            
         }
 
-
-        static Player BuildPlayer(IWebElement e)
+        private static Player BuildPlayer(IWebElement e)
         {
-           
-                string playerName = GetPlayerNameFromRowText(e.Text);
+            string playerName = GetPlayerNameFromRowText(e.Text);
 
+            Console.WriteLine("Henter wbuffs for " + playerName);
 
-                Console.WriteLine("Henter wbuffs for " + playerName);
+            List<WorldBuff> buffs = new List<WorldBuff>();
 
-                List<WorldBuff> buffs = new List<WorldBuff>();
-
-                foreach (var b in e.FindElements(By.CssSelector("td.azerite-cell > a:nth-child(n)"))
-                    .Select(x => x.GetAttribute("href")))
+            foreach (var b in e.FindElements(By.CssSelector("td.azerite-cell > a:nth-child(n)"))
+                .Select(x => x.GetAttribute("href")))
+            {
+                try
                 {
-                    try
-                    {
-
-                        uint id = GetSpellIdFromHref(b);
-                        WorldBuff buff = new WorldBuff(id);
-                        buffs.Add(buff);
-
-                    }
-                    catch (Exception exception)
-                    {
-                        AppException = exception;
-                    }
-
+                    uint id = GetSpellIdFromHref(b);
+                    WorldBuff buff = new WorldBuff(id);
+                    buffs.Add(buff);
                 }
-                        
-
-                Player p = new Player(playerName, buffs);
-
-                lock (Raiders)
+                catch (Exception exception)
                 {
-                    if (Raiders.All(r => r.Name != p.Name))
-                    {
-                        Raiders.Add(p);
-                    }
-                  
+                    AppException = exception;
                 }
+            }
 
-            
+            Player p = new Player(playerName, buffs);
 
-                return p;
+            lock (Raiders)
+            {
+                if (Raiders.All(r => r.Name != p.Name)) Raiders.Add(p);
+            }
 
-
+            return p;
         }
 
-       async static Task<ReadOnlyCollection<IWebElement>> GetRows()
+        private static async Task<ReadOnlyCollection<IWebElement>> GetRows()
         {
- 
-
-
             Console.WriteLine("Henter Rader");
-
 
             List<IWebElement> res = new List<IWebElement>();
 
@@ -347,25 +300,16 @@ namespace Buffs2Csv
             {
                 await Task.Delay(100).ConfigureAwait(false);
 
-
                 var t1 = D.FindElementsByCssSelector("#DataTables_Table_0 > tbody > tr:nth-child(n)").ToList();
                 var t2 = D.FindElementsByCssSelector("#DataTables_Table_1 > tbody > tr:nth-child(n)").ToList();
                 var t3 = D.FindElementsByCssSelector("#DataTables_Table_2 > tbody > tr:nth-child(n)").ToList();
 
-                if (t1.Count == 0 || t2.Count == 0 || t3.Count == 0)
-                {
-                    continue;
-                }
+                if (t1.Count == 0 || t2.Count == 0 || t3.Count == 0) continue;
 
                 res.AddRange(t1);
                 res.AddRange(t2);
                 res.AddRange(t3);
-
             }
-
-
-
-
 
             Console.WriteLine("Fant " + res.Count + " rader");
 
